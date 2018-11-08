@@ -8,3 +8,7 @@ https://leafletjs.com/
 
 For more information about me, visit: 
 https://www.linkedin.com/in/MattGingery
+
+See my JavaScript Fiddles at:
+https://jsfiddle.net/user/mgingery/fiddles/
+
