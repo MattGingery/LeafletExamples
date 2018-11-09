@@ -1,0 +1,147 @@
+<html>
+<head>
+  <title>Leaflet Part2 - Auto Center and Zoom Example</title>
+  <meta charset="UTF-8"> 
+  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+  <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <style>
+    html, body, #map { 
+		height: 100%;
+	}
+  </style>  
+</head>
+<body>
+<div id="map"></div>
+<script>
+drawMap(39.82835, -98.5816684, 5); // The Geographic Center of the United States
+
+// Use this to get the array of Polygons you wish to display.  
+// This is where you should retrieve shape data from your middle-tier application.
+// Each item must contain: 
+// Polygon definition which is an array of 2 element arrays of lat/long points
+// Optional items: 
+// short title of the shape, additional html to display on popup, color.	
+function getPolygons() {
+  var data = [
+    [
+      [
+        [32.802077, -117.244066],
+        [32.802555, -117.241716],
+        [32.800715, -117.241169],
+        [32.800225, -117.243638]
+      ],
+      "PB Middle School"
+    ],
+    [
+      [
+        [32.800807, -117.226163],
+        [32.801618, -117.222419],
+        [32.798083, -117.221303],
+        [32.797325, -117.225219]
+      ],
+      "Mission Bay High School", "2475 Grand Ave, San Diego, CA 92109", "gold"
+    ]
+  ];
+  if (data == null ) {
+    return [];
+  } else {
+    return data;
+  }
+}
+
+// Use this to get the array of Markers you wish to display.    
+// This is where you should retrieve point data from your middle-tier application.
+// Each item must contain: lattitude, longitude
+// Optional items: short title of the point, additional html to display on popup.	
+function getMarkers() {
+  var data = [
+    [32.794033, -117.250707, "Library", "<hr /><a target='new' href='https://www.sandiego.gov/public-library/locations/pacific-beach-taylor-library'><i>More Info...</i></a>"],
+    [32.808842, -117.231990, "Kate Sessions Elementary", null]
+  ];
+  if (data == null ) {
+    return [];
+  } else {
+    return data;
+  }
+}
+
+// Basic map instantiation.  Can also use other sources besides OpenStreetMaps - 
+// you should get the tileLayer urlTemplate and options from 
+// your middle-tier application which should store that data in a config file. 
+function drawMap(centerLat, centerLong, zoomLevel) {
+  try {
+    var lfmap;
+    var mapCenter = [centerLat, centerLong];
+
+    lfmap = L.map('map').setView(mapCenter, zoomLevel);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(lfmap);
+
+    drawLayers(lfmap);
+  } catch (exc) {
+    alert("Error drawing map: " + exc);
+  }
+}
+
+// Iterates through geo objects, assigns default values, and draws them.
+function drawLayers(lfmap) {
+  var mapObjects = [];
+
+  getMarkers().forEach((marker, index) => {
+    var title = (marker.length > 2 && marker[2] != null) ?
+      marker[2] : 'Marker #' + (index + 1);
+    var details = (marker.length > 3 && marker[3] != null) ?
+      marker[3] : '';
+
+    var obj = drawMarker(lfmap, marker[0], marker[1], title, details);
+    mapObjects.push(obj);
+  });
+
+  getPolygons().forEach((shape, index) => {
+    var title = (shape.length > 1 && shape[1] != null) ?
+      shape[1] : 'Shape #' + (index + 1);
+    var details = (shape.length > 2 && shape[2] != null) ?
+      shape[2] : '';
+    var fillColor = (shape.length > 3 && shape[3] != null) ?
+      shape[3] : 'blue';
+
+    var obj = drawPolygon(lfmap, shape[0], title, details, fillColor);
+    mapObjects.push(obj);
+  });
+
+  zoomToMapObjects(lfmap, mapObjects);
+}
+
+function drawMarker(lfmap, lat, lng, title, details) {
+  var formatPopupHtml = formatPopupText(title, details);
+
+  var marker = L.marker([lat, lng]).addTo(lfmap).bindPopup(formatPopupHtml);
+  return marker;
+}
+
+function drawPolygon(lfmap, latLngArray, title, details, fillColor) {
+  var formatPopupHtml = formatPopupText(title, details);
+
+  var polygon = L.polygon(latLngArray, {
+      color: fillColor
+    })
+    .addTo(lfmap).bindPopup(formatPopupHtml);
+  return polygon;
+}
+
+function formatPopupText(title, details) {
+  return "<b>" + title + "</b><br />" + details;
+}
+
+function zoomToMapObjects(lfmap, mapObjects) {
+  var group = new L.featureGroup(mapObjects);
+
+  lfmap.fitBounds(group.getBounds());
+}
+
+
+</script>
+</body>
+</html>
