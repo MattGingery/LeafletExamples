@@ -21,5 +21,5 @@ If you like, you can create these “featureGroup” objects as global variables
 
 ## Next Steps
 
-In the next article, I will add some code to automatically adjust the polygon’s colors to give the users a better visual experience.
+In the [next article](https://github.com/MattGingery/LeafletExamples/blob/master/Article_Part3.md), I will add some user interaction code and to automatically adjust the polygon’s colors to give the users a better visual experience.
 
