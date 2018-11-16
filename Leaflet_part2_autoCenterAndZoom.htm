@@ -42,7 +42,7 @@ function getPolygons() {
       "Mission Bay High School", "2475 Grand Ave, San Diego, CA 92109", "gold"
     ]
   ];
-  if (data == null ) {
+  if (data == null) {
     return [];
   } else {
     return data;
@@ -58,7 +58,7 @@ function getMarkers() {
     [32.794033, -117.250707, "Library", "<hr /><a target='new' href='https://www.sandiego.gov/public-library/locations/pacific-beach-taylor-library'><i>More Info...</i></a>"],
     [32.808842, -117.231990, "Kate Sessions Elementary", null]
   ];
-  if (data == null ) {
+  if (data == null) {
     return [];
   } else {
     return data;
@@ -89,7 +89,9 @@ function drawMap(centerLat, centerLong, zoomLevel) {
 function drawLayers(lfmap) {
   var mapObjects = [];
 
-  getMarkers().forEach((marker, index) => {
+  var markers = getMarkers();
+  for (var index = 0; index < markers.length; index++) {
+    var marker = markers[index];
     var title = (marker.length > 2 && marker[2] != null) ?
       marker[2] : 'Marker #' + (index + 1);
     var details = (marker.length > 3 && marker[3] != null) ?
@@ -97,9 +99,11 @@ function drawLayers(lfmap) {
 
     var obj = drawMarker(lfmap, marker[0], marker[1], title, details);
     mapObjects.push(obj);
-  });
+  };
 
-  getPolygons().forEach((shape, index) => {
+  var shapes = getPolygons();
+  for (var index = 0; index < shapes.length; index++) {
+    var shape = shapes[index];
     var title = (shape.length > 1 && shape[1] != null) ?
       shape[1] : 'Shape #' + (index + 1);
     var details = (shape.length > 2 && shape[2] != null) ?
@@ -109,7 +113,7 @@ function drawLayers(lfmap) {
 
     var obj = drawPolygon(lfmap, shape[0], title, details, fillColor);
     mapObjects.push(obj);
-  });
+  };
 
   zoomToMapObjects(lfmap, mapObjects);
 }
