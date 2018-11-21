@@ -1,0 +1,275 @@
+<html>
+<head>
+  <title>Leaflet Part4 - Index</title>
+  <meta charset="UTF-8"> 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css"/>
+  <script                 src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>
+  <script                 src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <style>
+	#content {
+	  width: 100%;
+	  overflow: hidden;
+	}
+
+	#searchDiv {
+	  display: none;
+	  float: left;
+	}
+
+	#map {
+	  width: 100%;
+	  height: 95%;
+	  float: right;
+	}
+  </style>  
+</head>
+<body>
+<div id="toolbar">
+  <input type="button" id="searchButton" accesskey="S" title="Click or use Alt-S to hide/show the search page" value="Show Search" />
+</div>
+<div id="content">
+  <div id="searchDiv">
+    <table id="searchTable" class="display" width="100%"></table>
+  </div>
+  <div id="map"></div>
+</div>
+<script>
+var lfmap;
+var mapObjects = [];
+var colorIndex = -1;
+var dataSet = [];
+var searchShown = false;
+
+$(document).ready(function() {
+
+  drawMap(39.82835, -98.5816684, 5); // The Geographic Center of the United States
+  $('#searchDiv').hide();
+
+  var table = $('#searchTable').DataTable({
+    data: dataSet,
+    pageLength: 15,
+    pagingType: 'simple',
+    bLengthChange: false,
+    columns: [{
+        title: ''
+      },
+      {
+        title: ''
+      }
+    ],
+    columnDefs: [{
+      targets: 1,
+      visible: false
+    }]
+  });
+
+
+  $('#searchTable tbody').on('click', 'tr', function() {
+    var index = table.row(this).data()[1] - 1;
+    displayMapObject(index);
+  });
+
+  $('#searchButton').click(function() {
+    searchShown = !searchShown;
+    if (searchShown) {
+      $('#searchButton').val('Hide Search');
+      $('#map').width('76%');
+      $('#searchDiv').width('20%');
+      zoomToMapObjects(mapObjects);
+    } else {
+      $('#searchButton').val('Show Search');
+      $('#map').width('100%');
+    }
+
+    $('#searchDiv').toggle();
+  });
+});
+
+
+// Use this to get the array of Polygons you wish to display.  
+// This is where you should retrieve shape data from your middle-tier application.
+// Each item must contain: 
+// Polygon definition which is an array of 2 element arrays of lat/long points
+// Optional items: 
+// short title of the shape, additional html to display on popup, color.	
+function getPolygons() {
+  var data = getGrid(32.802077, -117.244066, 0.00100, 0.001500, 15, 10); // list of test shapes
+  data.push([getRectangleCoords(32.813000, -117.250000, 0.02, 0.01)]);
+
+  if (data == null) {
+    return [];
+  } else {
+    return data;
+  }
+}
+
+// Use this to get the array of Markers you wish to display.  
+// This is where you should retrieve point data from your middle-tier application.
+// Each item must contain: lattitude, longitude
+// Optional items: short title of the point, additional html to display on popup.	
+function getMarkers() {
+  var data = [
+    [32.794033, -117.250707, 'Library', '<hr /><a target="new" href="https://www.sandiego.gov/public-library/locations/pacific-beach-taylor-library"><i>More Info...</i></a>'],
+    [32.808842, -117.231990, 'Kate Sessions Elementary', null]
+  ];
+  if (data == null || typeof data == 'undefined') {
+    return [];
+  } else {
+    return data;
+  }
+}
+
+// Basic map instantiation.  Can also use other sources besides OpenStreetMaps - 
+// you should get the tileLayer urlTemplate and options from  
+// your middle-tier application which should store that data in a config file. 
+function drawMap(centerLat, centerLong, zoomLevel) {
+  var mapCenter = [centerLat, centerLong];
+
+  lfmap = L.map('map').setView(mapCenter, zoomLevel);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(lfmap);
+
+  drawLayers(lfmap);
+}
+
+// Iterates through geo objects, assigns default values, and draws them.
+function drawLayers() {
+  var markers = getMarkers();
+  for (var index = 0; index < markers.length; index++) {
+    var marker = markers[index];
+    var title = (marker.length > 2 && marker[2] != null) ?
+      marker[2] : 'Marker #' + ('    ' + (index + 1)).slice(-5);
+    var details = (marker.length > 3 && marker[3] != null) ?
+      marker[3] : '';
+
+    var obj = drawMarker(marker[0], marker[1], title, details, index);
+    mapObjects.push(obj);
+    dataSet.push([title, index + 1]);
+  };
+
+  var objectsIndex = mapObjects.length;
+  var shapes = getPolygons();
+  for (var index = 0; index < shapes.length; index++) {
+    var shape = shapes[index];
+    var title = (shape.length > 1 && shape[1] != null) ?
+      shape[1] : 'Shape #' + ('    ' + (index + 1)).slice(-5);
+    var details = (shape.length > 2 && shape[2] != null) ?
+      shape[2] : '';
+    var fillColor = (shape.length > 3 && shape[3] != null) ?
+      shape[3] : getColorRotation();
+
+    var obj = drawPolygon(shape[0], title, details, fillColor, objectsIndex);
+    mapObjects.push(obj);
+    dataSet.push([title, objectsIndex + 1])
+    objectsIndex++;
+  };
+
+  var title = 'Boundary between P.B. and La Jolla';
+  var obj = drawPolyline(
+    [
+      [32.805622, -117.262563],
+      [32.810473, -117.259859],
+      [32.817273, -117.236724],
+      [32.823080, -117.230455]
+    ],
+    title, null, 'blue', objectsIndex);
+  mapObjects.push(obj);
+  dataSet.push([title, objectsIndex + 1])
+
+  zoomToMapObjects(mapObjects);
+}
+
+function drawMarker(lat, lng, title, details, mapObjectsIndex) {
+  var formatPopupHtml = formatPopupText(title, details, mapObjectsIndex);
+
+  var marker = L.marker([lat, lng]).addTo(lfmap).bindPopup(formatPopupHtml);
+  return marker;
+}
+
+function drawPolygon(latLngArray, title, details, fillColor, mapObjectsIndex) {
+  var formatPopupHtml = formatPopupText(title, details, mapObjectsIndex);
+
+  var polygon = L.polygon(latLngArray, {
+      color: fillColor
+    })
+    .addTo(lfmap).bindPopup(formatPopupHtml);
+  return polygon;
+}
+
+function drawPolyline(latLngArray, title, details, fillColor, mapObjectsIndex) {
+  var formatPopupHtml = formatPopupText(title, details, mapObjectsIndex);
+
+  var polyline = L.polyline(latLngArray, {
+      color: fillColor
+    })
+    .addTo(lfmap).bindPopup(formatPopupHtml);
+  return polyline;
+}
+
+function formatPopupText(title, details, mapObjectsIndex) {
+  return '<b>' + title + '</b><br />' + (details == null ? '' : details) +
+    '<br /><hr /><a href="javascript:void(0)" onclick="zoomToMapObject(' +
+    mapObjectsIndex + ')" accesskey="Z" title="Click or use Alt-Z to zoom to this location">Zoom To</a>';
+}
+
+// Zooms to a mapObject by index, 
+// then shows the object's PopUp in the center of the object.
+// obj.openPopup() without LatLng shows the PopUp in the first corner of the shape.
+// Note that in some odd shapes such as a PolyLine or a "C"-shaped Polygon,
+// the center where the PopUp will display will not actually be on the object.
+function displayMapObject(mapObjectsIndex) {
+  zoomToMapObject(mapObjectsIndex);
+  var obj = mapObjects[mapObjectsIndex];
+  var group = new L.featureGroup([obj]);
+  obj.openPopup(group.getBounds().getCenter());
+}
+
+function zoomToMapObject(mapObjectsIndex) {
+  zoomToMapObjects([mapObjects[mapObjectsIndex]]);
+}
+
+function zoomToMapObjects(objects) {
+  var group = new L.featureGroup(objects);
+
+  lfmap.fitBounds(group.getBounds());
+}
+
+function getColorRotation() {
+  var colorList = ['blue', 'red', 'purple', 'orange'];
+  colorIndex++;
+  if (colorIndex >= colorList.length) {
+    colorIndex = 0;
+  }
+  return colorList[colorIndex];
+}
+
+// test functions.  Used to draw many map objects for your tests.
+function getRectangleCoords(latLeft, lngTop, degreesWidth, degreesHeight) {
+  return [
+    [latLeft, lngTop],
+    [latLeft - degreesHeight, lngTop],
+    [latLeft - degreesHeight, lngTop + degreesWidth],
+    [latLeft, lngTop + degreesWidth]
+  ];
+}
+
+function getGrid(latLeft, lngTop, degreesWidth, degreesHeight, nbrColumns, nbrRows) {
+  var data = [];
+  for (var x = 0; x < nbrRows; x++) {
+    for (var y = 0; y < nbrColumns; y++) {
+      data.push([
+        getRectangleCoords(latLeft + (-1 * x * degreesHeight), lngTop + (y * degreesWidth), degreesWidth, degreesHeight)
+      ]);
+    }
+  }
+  return data;
+}
+
+</script>
+</body>
+</html>
+</html>
