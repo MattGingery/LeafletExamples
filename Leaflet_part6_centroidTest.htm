@@ -1,0 +1,381 @@
+
+<html>
+<head>
+  <title>Leaflet Part6 - Concave Polygons - Centroid Test</title>
+  <meta charset="UTF-8"> 
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css"/>
+  <script                 src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>
+  <script                 src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://arthur-e.github.io/Wicket/wicket.js" type="text/javascript"></script>
+  <script src="https://arthur-e.github.io/Wicket/wicket-leaflet.js" type="text/javascript"></script>  
+
+  <script src="polylabel.js" type="text/javascript"></script>  
+  <script src="wise-leaflet-pip.js" type="text/javascript"></script>  
+  
+  
+  <style>
+	#content {
+	  width: 100%;
+	  overflow: hidden;
+	}
+
+	#searchDiv {
+	  display: none;
+	  float: left;
+	}
+
+	#map {
+	  width: 100%;
+	  height: 95%;
+	  float: right;
+	}
+  </style>  
+</head>
+<body>
+<div id="toolbar">
+  <input type="button" id="searchButton" accesskey="S" title="Click or use Alt-S to hide/show the search page" value="Show Search" />
+</div>
+<div id="content">
+  <div id="searchDiv">
+    <table id="searchTable" class="display" width="100%"></table>
+  </div>
+  <div id="map"></div>
+</div>
+<script>
+var lfmap;
+var mapObjects = [];
+var colorIndex = -1;
+var dataSet = [];
+var searchShown = false;
+var drawnObjTypes = {};
+var popup = L.popup();
+
+$(document).ready(function() {
+
+  drawMap(39.82835, -98.5816684, 5); // The Geographic Center of the United States
+  $('#searchDiv').hide();
+
+  var table = $('#searchTable').DataTable({
+    data: dataSet,
+    pageLength: 15,
+    pagingType: 'simple',
+    bLengthChange: false,
+    columns: [{
+        title: ''
+      },
+      {
+        title: ''
+      }
+    ],
+    columnDefs: [{
+      targets: 1,
+      visible: false
+    }]
+  });
+
+
+  $('#searchTable tbody').on('click', 'tr', function() {
+    var index = table.row(this).data()[1] - 1;
+    displayMapObject(index);
+  });
+
+  $('#searchButton').click(function() {
+    searchShown = !searchShown;
+    if (searchShown) {
+      $('#searchButton').val('Hide Search');
+      $('#map').width('76%');
+      $('#searchDiv').width('20%');
+      zoomToMapObjects(mapObjects);
+    } else {
+      $('#searchButton').val('Show Search');
+      $('#map').width('100%');
+    }
+
+    $('#searchDiv').toggle();
+  });
+});
+
+// Use this to get the array of Well Known Text (WKT) you wish to display.  
+// This is where you should retrieve shape data from your middle-tier application.
+// Each item must contain a WKT or GeoJSON string as the first item.  Supports Polygon, 
+// Linestring, Point, and 'Multi' version of each.   
+// Optional items: 
+// short title of the shape, additional html to display on popup, color.	
+function getWKT() {
+  var data = [];
+
+  data.push(['{"type":"Polygon","coordinates":[[[-117.24154472351073,32.79586076396607],[-117.24154472351073,32.79694300391599],[-117.21819877624512,32.79694300391599],[-117.21819877624512,32.79586076396607],[-117.24154472351073,32.79586076396607]]]}', 'Underline']);
+
+  data.push(['{"type":"Polygon","coordinates":[[[-117.2412014007568,32.80549223642987],[-117.24111557006836,32.79863848668713],[-117.2377681732178,32.79878278160029],[-117.2379398345947,32.79950425265341],[-117.240514755249,32.7995763994367],[-117.240514755249,32.80542009444754],[-117.2412014007568,32.80549223642987]]]}', 'Letter 1-L']);
+  data.push(['{"type":"Polygon","coordinates":[[[-117.2361373901367,32.80542009444754],[-117.2364807128906,32.79849419153979],[-117.2337341308594,32.79834989615826],[-117.23364830017096,32.7992156649347],[-117.2355365753173,32.79943210581155],[-117.2353649139404,32.80101932280814],[-117.23442077636713,32.80094717719575],[-117.2343349456787,32.801524340455444],[-117.235935760498,32.80166863068489],[-117.235935760498,32.8046986714041],[-117.23313331604,32.80455438609279],[-117.23304748535156,32.80549223642987],[-117.2361373901367,32.80542009444754]]]}', 'Letter 2-E']);
+
+  data.push(['{"type":"Polygon","coordinates":[[[-117.2312879562378,32.80350831058173],[-117.2330045700074,32.79860241292224],[-117.2318887710572,32.79860241292224],[-117.23111629486084,32.8013439773393],[-117.2301721572876,32.8013439773393],[-117.2294855117798,32.79845811771635],[-117.22854137420654,32.79874670789397],[-117.23008632659906,32.80336402333829],[-117.2312879562378,32.80350831058173]]]}', 'Letter 3-A']);
+
+  data.push(['{"type":"Polygon","coordinates":[[[-117.2272324562073,32.80394117090691],[-117.22714662551874,32.79943210581155],[-117.2268462181091,32.79950425265341],[-117.2268891334534,32.801704703205644],[-117.22517251968384,32.80177684820327],[-117.2251296043396,32.802173644643666],[-117.2268462181091,32.80213757231318],[-117.22671747207636,32.803544382356016],[-117.225215435028,32.80361652586064],[-117.225215435028,32.80394117090691],[-117.2272324562073,32.80394117090691]]]}', 'Letter 4-F']);
+
+  data.push(['{"type":"LineString","coordinates":[[-117.22427980804443,32.803544382356016],[-117.22463607788086,32.7980973786771],[-117.22240447998045,32.79795308265157]]}', 'Letter 5-L (line)']);
+
+  data.push(['{"type":"Point","coordinates":[-117.22137451171875,32.80199328284486]}', 'Letter 6-E (point)']);
+
+  data.push(['{"type":"LineString","coordinates":[[-117.2184133529663,32.7980973786771],[-117.2182846069336,32.80390509929365],[-117.21819877624512,32.801704703205644],[-117.21631050109863,32.80184899314234],[-117.21944332122803,32.80163255814947]]}', 'Letter 7-T (line)']);
+
+
+
+  if (data == null) {
+    return [];
+  } else {
+    return data;
+  }
+}
+
+// Basic map instantiation.  Can also use other sources besides OpenStreetMaps - 
+// you should get the tileLayer urlTemplate and options from  
+// your middle-tier application which should store that data in a config file. 
+function drawMap(centerLat, centerLong, zoomLevel) {
+  try {
+
+    var mapCenter = [centerLat, centerLong];
+
+    lfmap = L.map('map').setView(mapCenter, zoomLevel);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(lfmap);
+
+    drawLayers(lfmap);
+    lfmap.on('click', onMapClick);
+  } catch (e) {
+    alert('Error drawing map objects: ' + e.message);
+  }
+}
+
+// Iterates through geo objects, assigns default values, and draws them.
+function drawLayers() {
+  var wkt = new Wkt.Wkt();
+  var shapes = getWKT();
+
+  for (var index = 0; index < shapes.length; index++) {
+    var shape = shapes[index];
+    wkt.read(shape[0]);
+    var title = formatTitle(wkt.type, shape);
+    var details = (shape.length > 2 && shape[2] != null) ?
+      shape[2] : '';
+    var fillColor = (shape.length > 3 && shape[3] != null) ?
+      shape[3] : getColorRotation();
+
+
+    var obj = wkt.toObject({
+      color: fillColor
+    });
+
+    if (index == 0)
+      polygon = obj;
+
+    var lat = 0,
+      lng = 0;
+
+    var isLine = (wkt.type.indexOf('line') > -1);
+
+    if (wkt.type.indexOf('polygon') > -1 || isLine) {
+      // Center of Bounding Box:
+      var bounds = new L.featureGroup([obj]).getBounds();
+      var centerLatLng = bounds.getCenter();
+      lat = centerLatLng.lat;
+      lng = centerLatLng.lng;
+
+      drawMarker(lat, lng, 'Bounding Box Center of ' + title, '', index, 0.4, obj);
+      // show bounding box:
+      L.rectangle(bounds, {
+        color: 'black',
+        dashArray: '15 10',
+        fill: false
+      }).addTo(lfmap);
+
+      // Centroid:
+      var pts = getLatLngArrayFromObject(obj);
+      var centroid = getCentroid(pts);
+      drawMarker(centroid.x, centroid.y, 'Centroid of ' + title, '', index, 0.5, obj);
+
+
+      // Iterative Grid Algorithm (see polylabel.js):
+      var pl = polylabel([pts], 1, false);
+
+      if (pl !== null && !isNaN(pl[0]) && !isNaN(pl[1])) {
+        drawMarker(pl[0], pl[1], 'Polylabel of ' + title, '', index, 0.6, obj);
+      }
+
+      // If bounding box center is not within the polygon, find the closest 
+      // corners to that lat/long and place marker in the middle of it.
+      if (isLine || !obj.contains(centerLatLng)) {
+        var latLngs = obj.getLatLngs();
+        var middleLatLng = getClosestMiddleOfObjToLatLng(latLngs, centerLatLng, isLine);
+        drawMarker(middleLatLng.lat, middleLatLng.lng, 'Closest Line Middle of ' + title, '', index, 0.9, obj);
+      }
+
+    } else if (wkt.type.indexOf('point') > -1) {
+      lat = obj.getLatLng().lat;
+      lng = obj.getLatLng().lng;
+    }
+
+    var formatPopupHtml = formatPopupText(title, details, index, lat, lng);
+
+    obj.addTo(lfmap).bindPopup(formatPopupHtml);
+    mapObjects.push(obj);
+    dataSet.push([title, index + 1])
+  }
+
+  zoomToMapObjects(mapObjects);
+}
+
+// Use this to format the default 'Title' of the object however you want.
+// My code keeps a count of each different type of shape 
+// (polygon, point, lingstring) shown and increments the # of each one of them.
+function formatTitle(wktType, shape) {
+  wktType = wktType.replace('multi', ''); // for the title, user doesn't care if 'multi' or not.
+  wktType = wktType.replace('linestring', 'Line');
+  if (shape.length > 1 && shape[1] != null) {
+    return shape[1];
+  } else if (!drawnObjTypes.hasOwnProperty(wktType)) {
+    drawnObjTypes[wktType] = 1;
+  } else {
+    drawnObjTypes[wktType] += 1;
+  }
+
+  return wktType.charAt(0).toUpperCase() + wktType.substr(1).toLowerCase() +
+    ' #' + ('    ' + (drawnObjTypes[wktType])).slice(-5);
+}
+
+function formatPopupText(title, details, mapObjectsIndex, lat, lng) {
+  return '<b>' + title + '</b><br />' + details +
+    '<br />' + lat + '  ' + lng +
+    '<br /><hr /><a href="javascript:void(0)" onclick="zoomToMapObject(' +
+    mapObjectsIndex + ')" accesskey="Z" title="Click or use Alt-Z to zoom to this location">Zoom To</a>';
+}
+
+// Zooms to a mapObject by index, 
+// then shows the object's PopUp in the center of the object.
+// obj.openPopup() without LatLng shows the PopUp in the first corner of the shape.
+// Note that in some odd shapes such as a PolyLine or a 'C'-shaped Polygon,
+// the center where the PopUp will display will not actually be on the object.
+function displayMapObject(mapObjectsIndex) {
+  zoomToMapObject(mapObjectsIndex);
+  var obj = mapObjects[mapObjectsIndex];
+  var group = new L.featureGroup([obj]);
+  obj.openPopup(group.getBounds().getCenter());
+}
+
+function zoomToMapObject(mapObjectsIndex) {
+  zoomToMapObjects([mapObjects[mapObjectsIndex]]);
+}
+
+function zoomToMapObjects(objects) {
+  var group = new L.featureGroup(objects);
+
+  lfmap.fitBounds(group.getBounds());
+}
+
+function getColorRotation() {
+  var colorList = ['blue', 'red', 'purple', 'orange'];
+  colorIndex++;
+  if (colorIndex >= colorList.length) {
+    colorIndex = 0;
+  }
+  return colorList[colorIndex];
+}
+
+function drawMarker(lat, lng, title, details, mapObjectsIndex, markerOpactiy, shapeObj) {
+  var point = new L.LatLng(lat, lng);
+  details += '<br />This is ' + (shapeObj.contains(point) ? '' : 'NOT ') + 'inside the polygon';
+
+  var formatPopupHtml = formatPopupText(title, details, mapObjectsIndex, lat, lng);
+
+  var marker = L.marker([lat, lng], {
+      opacity: markerOpactiy
+    })
+    .addTo(lfmap).bindPopup(formatPopupHtml);
+  return marker;
+}
+
+// Changes an objects LatLng array to an array of 2 item (lat,lng) arrays.
+function getLatLngArrayFromObject(obj) {
+  var latlngs = obj.getLatLngs();
+
+  var pts = [];
+  for (var i = 0; i < latlngs.length; i++) {
+    var pt = [latlngs[i].lat, latlngs[i].lng];
+    pts.push(pt);
+  }
+
+  return pts;
+}
+
+// Standard code for getting a polygon centroid.
+// Leaflet versions 1.0.0+ implement this as polyline.getCenter(). 
+function getCentroid(pts) {
+  var first = pts[0],
+    last = pts[pts.length - 1];
+  if (first[0] != last[0] || first[1] != last[1]) pts.push(first);
+  var twicearea = 0,
+    x = 0,
+    y = 0,
+    nPts = pts.length,
+    p1, p2, f;
+  for (var i = 0, j = nPts - 1; i < nPts; j = i++) {
+    p1 = pts[i];
+    p2 = pts[j];
+    f = p1[0] * p2[1] - p2[0] * p1[1];
+    twicearea += f;
+    x += (p1[0] + p2[0]) * f;
+    y += (p1[1] + p2[1]) * f;
+  }
+
+  f = twicearea * 3;
+  return {
+    x: x / f,
+    y: y / f
+  };
+}
+
+// returns the middle point of a line segment from latLng1 to latLng2.
+function getMiddleOfTwoLngLng(latLng1, latLng2) {
+  var lat = (latLng1.lat + latLng2.lat) / 2;
+  var lng = (latLng1.lng + latLng2.lng) / 2;
+  return new L.LatLng(lat, lng);
+}
+
+// objLatLngs must be the polyline or polgon LatLng array.
+// latLng is the LatLng value of the point you want to get closest to.
+// isLine is boolean - needed because polygons latlng array does not include the 
+//  	final line; it is assumed the last latlng connects to the first latlng 
+//		in the array.
+function getClosestMiddleOfObjToLatLng(objLatLngs, latLng, isLine) {
+  var middleLatLng, distance = Number.MAX_VALUE;
+  var nbrLines = objLatLngs.length - (isLine ? 1 : 0); // get closing LatLng if polygon	
+  for (var i = 0; i < nbrLines; i++) {
+    var thisMiddle = getMiddleOfTwoLngLng(objLatLngs[i], objLatLngs[(i == objLatLngs.length - 1) ? 0 : i + 1]);
+    var thisDistance = latLng.distanceTo(thisMiddle);
+    if (thisDistance < distance) {
+      middleLatLng = thisMiddle;
+      distance = thisDistance;
+    }
+  }
+  return middleLatLng;
+}
+
+function onMapClick(e) {
+  var contained = polygon.contains(e.latlng);
+  var message = contained ? 'This is inside the Underline polygon!' : 'This is NOT inside the Underline polygon.';
+  message += '<br />' + e.latlng.lat + '  ' + e.latlng.lng;
+  popup
+    .setLatLng(e.latlng)
+    .setContent(message)
+    .openOn(lfmap);
+}
+
+
+</script>
+</body>
+</html>
+</html>
