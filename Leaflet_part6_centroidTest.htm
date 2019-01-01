@@ -121,8 +121,6 @@ function getWKT() {
 
   data.push(['{"type":"LineString","coordinates":[[-117.2184133529663,32.7980973786771],[-117.2182846069336,32.80390509929365],[-117.21819877624512,32.801704703205644],[-117.21631050109863,32.80184899314234],[-117.21944332122803,32.80163255814947]]}', 'Letter 7-T (line)']);
 
-
-
   if (data == null) {
     return [];
   } else {
@@ -345,7 +343,7 @@ function getMiddleOfTwoLngLng(latLng1, latLng2) {
   return new L.LatLng(lat, lng);
 }
 
-// objLatLngs must be the polyline or polgon LatLng array.
+// objLatLngs must be the polyline or polygon LatLng array.
 // latLng is the LatLng value of the point you want to get closest to.
 // isLine is boolean - needed because polygons latlng array does not include the 
 //  	final line; it is assumed the last latlng connects to the first latlng 
