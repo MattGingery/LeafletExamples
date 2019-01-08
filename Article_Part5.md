@@ -1,7 +1,7 @@
 # Leaflet Maps – JavaScript Library – Part 5 – Well Known Text and GeoJSON
 This builds on the simple template described in [the previous article](https://mattgingery.github.io/LeafletExamples/Article_Part4).
 
-Part 5 – Well Known Text and GeoJSON Example links: [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part5_wkt.htm) [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part5_wkt.htm) | [JSFiddle](https://jsfiddle.net/mgingery/m4we37od/)
+Part 5 – Well Known Text and GeoJSON Example links: [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part5_wkt.htm) | [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part5_wkt.htm) | [JSFiddle](https://jsfiddle.net/mgingery/m4we37od/)
 
 Note: if you use the JSFiddle link, you will want to go to “Settings” and choose “Right results” or “Tabs” so that you can better see the results.
 
