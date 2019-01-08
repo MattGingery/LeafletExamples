@@ -16,6 +16,16 @@ I also created some other articles each with example files that show step-by-ste
 
 I used ECMAScript 5 Javascript in these examples so that this code would work in all Browsers including I.E.    
 
-For more information about me, visit: 
-https://www.linkedin.com/in/MattGingery
+For more information about me, visit [my LinkedIn page](https://www.linkedin.com/in/MattGingery).
+
+## Tutorial Table of Contents:
+
+Example Link | JSFiddle Link | Article Link
+------------ | ------------- | -------------
+[1.](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [fiddle](https://jsfiddle.net/mgingery/zd7upbx2/) | [Part 1 – A Simple Template](https://mattgingery.github.io/LeafletExamples/Article_Part1) 
+[2.](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [fiddle](https://jsfiddle.net/mgingery/ght9n73c/) | [Part 2 – Auto Center and Zoom](https://mattgingery.github.io/LeafletExamples/Article_Part2)
+[3.](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [fiddle](https://jsfiddle.net/mgingery/j1zme7qr/) | [Part 3 – User Interaction & Rotate Colors](https://mattgingery.github.io/LeafletExamples/Article_Part3)
+[4.](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [fiddle](https://jsfiddle.net/mgingery/689pyjLm/) | [Part 4 – Map Index](https://mattgingery.github.io/LeafletExamples/Article_Part4)
+[5.](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [fiddle](https://jsfiddle.net/mgingery/m4we37od/) | [Part 5 – Well Known Text and GeoJSON](https://mattgingery.github.io/LeafletExamples/Article_Part5)
+[6.](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [fiddle](https://jsfiddle.net/mgingery/6x3z9reL/) | [Part 6 – Concave Polygons](https://mattgingery.github.io/LeafletExamples/Article_Part6)
 
