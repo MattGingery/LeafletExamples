@@ -30,7 +30,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 5.	Create an object (“tileLayer”) using the above code and the call the “addTo()” method on it to place the map image tiles on the map object you created in the previous step.  You could specify other map sources here as well.
 That is all it takes to display an interactive map on your own webpage.
 ## Drawing Shapes and Markers
-Part 1 – Simple Example links:  [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part1_simple.htm) | [JSFiddle](https://jsfiddle.net/mgingery/zd7upbx2/) 
+Part 1 – Simple Example links:  [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part1_simple.htm) | [JSFiddle](https://jsfiddle.net/mgingery/zd7upbx2/) 
 
 In the “Part 1 – Simple” example the getPolygons() and getMarkers() JavaScript functions are where you return the map objects you wish to draw.  Usually these would get their data from a web service or from the middle tier of you web application.  In this example, though, I put some sample objects in to show you the format of data they should return.  
 
@@ -42,4 +42,4 @@ In the “Part 1 – Simple” example the getPolygons() and getMarkers() JavaSc
 
 **drawMap()** must be called with the latitude and the longitude of the center of map to display as well as the zoom level.  It then calls drawLayers() which iterates the getMarkers() and getPolygons() returned arrays, sets defaults, then draws each object using drawMarker() or drawPolygon(), and assigns Popups for when you click on the drawn object.
 ## Next Steps
-In the [next article](https://github.com/MattGingery/LeafletExamples/blob/master/Article_Part2.md), I will show you how you can have the page automatically center and zoom to display the objects you draw on the map so that you will not have to manually set those values.
+In the [next article](Article_Part2), I will show you how you can have the page automatically center and zoom to display the objects you draw on the map so that you will not have to manually set those values.
