@@ -45,4 +45,4 @@ In the “Part 1 – Simple” example the getPolygons() and getMarkers() JavaSc
 
 **drawMap()** must be called with the latitude and the longitude of the center of map to display as well as the zoom level.  It then calls drawLayers() which iterates the getMarkers() and getPolygons() returned arrays, sets defaults, then draws each object using drawMarker() or drawPolygon(), and assigns Popups for when you click on the drawn object.
 ## Next Steps
-In the [next article](Article_Part2), I will show you how you can have the page automatically center and zoom to display the objects you draw on the map so that you will not have to manually set those values.
+In the [next article](https://mattgingery.github.io/LeafletExamples/Article_Part2), I will show you how you can have the page automatically center and zoom to display the objects you draw on the map so that you will not have to manually set those values.
