@@ -1,6 +1,6 @@
 # Leaflet Maps – JavaScript Library – Part 3 – User Interaction & Rotate Colors 
 
-This builds on the simple template described in [the previous article](https://mattgingery.github.io/LeafletExample/Article_Part2).
+This builds on the simple template described in [the previous article](https://mattgingery.github.io/LeafletExamples/Article_Part2).
 
 Part 3 – User Interaction & Rotate Colors Example links: [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part3_userInteraction.htm) | [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part3_userInteraction.htm) | [JSFiddle](https://jsfiddle.net/mgingery/j1zme7qr/)
 
