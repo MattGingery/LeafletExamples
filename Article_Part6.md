@@ -1,13 +1,13 @@
 # Leaflet Maps – JavaScript Library – Part 6 – Concave Polygons
 This builds on the simple template described in [the previous article](https://mattgingery.github.io/LeafletExamples/Article_Part5).
 
-Part 6 – Concave Polygons Example links:  [GitHub](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_concavePolygons.htm) | [JSFiddle](https://jsfiddle.net/mgingery/6x3z9reL/)
+Part 6 – Concave Polygons Example links: [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_concavePolygons.htm) | [GitHub](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_concavePolygons.htm) | [JSFiddle](https://jsfiddle.net/mgingery/6x3z9reL/)
 
 ## Dealing with Concave Polygons
 
 In the [previous examples](https://mattgingery.github.io/LeafletExamples/Leaflet_part5_wkt.htm), you may have noticed that when you click on some of the shapes listed in the index, it shows the pop-up close to the line/shape but it does not always touch the polyline or polygon.  That is because the center of the bounding box around the polyline or polygon will sometimes be inside the “dent” of a [concave]( http://www.differencebetween.info/difference-between-concave-and-convex-polygons) polygon or polyline.  Single lines, rectangles, and triangles do not have this problem, but irregular shapes such as an “L”-shaped polygon sometimes do.  
 
-To help show and test this issue, I created [some example code](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_centroidTest.htm) that shows a series of concave polygons or polylines, a dotted bounding box around each one, and markers representing the various methods you can use to determine the visual center of the object.  In most cases, the bounding box center was quite far from the visual center of each shape.  Another method you can use to try to find the visual center of the object would be to find the [centroid](https://en.wikipedia.org/wiki/Centroid) of the polygon.  In more recent versions of Leaflet you can use the polyline.getCenter() method to get the centroid of an object.  You can also convert the lat/long values to an array and then use a getCentroid() function that you can copy from my example or find easily enough online.  Centroid usually looks a little bit closer to the visual center of the object but still often does not touch the polygon.
+To help show and test this issue, I created [some example code](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_centroidTest.htm) that shows a series of concave polygons or polylines, a dotted bounding box around each one, and markers representing the various methods you can use to determine the visual center of the object.  In most cases, the bounding box center was quite far from the visual center of each shape.  Another method you can use to try to find the visual center of the object would be to find the [centroid](https://en.wikipedia.org/wiki/Centroid) of the polygon.  In more recent versions of Leaflet you can use the polyline.getCenter() method to get the centroid of an object.  You can also convert the lat/long values to an array and then use a **getCentroid()** function that you can copy from my example or find easily enough online.  Centroid usually looks a little bit closer to the visual center of the object but still often does not touch the polygon.
 
 Another method you can use for determining the center of an object is an iterative grid algorithm.  I found one such example at https://github.com/mapbox/polylabel.  I modified it slightly for use in straight JavaScript and tested it out on the example as well.  The results were sometimes close to the centroid and usually a little better quality but still often did not touch concave polygons.  None of the standard algorithms seems to work well for concave polygons; is there another solution?
 
@@ -27,7 +27,7 @@ This method will come in handy for displaying the visual center for concave poly
 
 ## When getCenter() is Not Within the Polygon…
 
-Since centroid and other methods do not work well for finding the visual center of concave polygons, we must explore other options when we find that the bounding box center is not within the polygon.  The easiest method would be to use one of the corners of the polygon as the “center”.  You can get the array of LatLng coordinates by simply using the Leaflet objects’ getLatLngs() method.  After experimenting with a few shapes using different methods, I found the best looking logic is to find the middle coordinates of each line in the polygon or polyline and use the one that is closest to the bounding box center.  First, I created a getMiddleOfTwoLngLng() function:
+Since centroid and other methods do not work well for finding the visual center of concave polygons, we must explore other options when we find that the bounding box center is not within the polygon.  The easiest method would be to use one of the corners of the polygon as the “center”.  You can get the array of LatLng coordinates by simply using the Leaflet objects’ **getLatLngs()** method.  After experimenting with a few shapes using different methods, I found the best looking logic is to find the middle coordinates of each line in the polygon or polyline and use the one that is closest to the bounding box center.  First, I created a **getMiddleOfTwoLngLng()** function:
 ```javascript
 function getMiddleOfTwoLngLng(latLng1, latLng2) {
   var lat = (latLng1.lat + latLng2.lat) / 2;
@@ -63,7 +63,7 @@ else if (wkt.type.indexOf('polygon') > -1 ) {
 }
 dataSet.push([title, index + 1, objType])
 ```
-Finally, we add must the new logic to the displayMapObject() fucntion that determines if the bounding box center is within the object and get the closest middle of the object’s line segments if it is not.  
+Finally, we add must the new logic to the existing **displayMapObject()** function that determines if the bounding box center is within the object and get the closest middle of the object’s line segments if it is not.  
 ```javascript
 function displayMapObject(mapObjectsIndex) {
   zoomToMapObject(mapObjectsIndex);
