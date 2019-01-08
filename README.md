@@ -6,9 +6,13 @@ You can with a very simple to use, open-source JavaScript library named Leaflet 
 
 ## My Examples
 
-The documentation for Leaflet is pretty good and I found several examples online that show how to do one small part of the code for a page but no good tutorials that show a complete working solution.  Over the next few weeks, I will be writing [several articles](https://mattgingery.github.io/LeafletExamples/Article_Part1) to fill that need.
+The documentation for Leaflet is pretty good and I found several examples online that show how to do one small part of the code for a page but no good tutorials that show a complete working solution.  I have written several articles to fill that need.  
 
-I created some example files that show how you can start with a list of markers and/or polygons, draw each one, give each polygon specified color, and display data when a marker or polygon is clicked.  I have them available for download at https://github.com/MattGingery/LeafletExamples/ or for displaying at https://mattgingery.github.io/LeafletExamples/ and https://jsfiddle.net/user/mgingery/fiddles/ (the code on JSFiddle is slightly different since JSFiddle sometimes displays differently than a stand-alone HTM file).  You will want to open the one of the links so you can see the code referred to in the articles that are in this repository.
+For a **beginner's tutorial**, start with [my first article](https://mattgingery.github.io/LeafletExamples/Article_Part1).  
+
+To jump straight to an **example** that has lots of functionality already built, see [Leaflet_part6_concavePolygons.htm](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_concavePolygons.htm).
+
+I also created some other articles each with example files that show step-by-step how you can start with a list of markers and/or polygons, draw each one, give each polygon specified color, display data when a marker or polygon is clicked, create a clickable index of the mapped objects, and more.  I have them available for download at https://github.com/MattGingery/LeafletExamples/ or for displaying at https://mattgingery.github.io/LeafletExamples/ and https://jsfiddle.net/user/mgingery/fiddles/ (the code on JSFiddle is slightly different since JSFiddle sometimes displays differently than a stand-alone HTM file).
 
 I used ECMAScript 5 Javascript in these examples so that this code would work in all Browsers including I.E.    
 
