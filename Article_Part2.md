@@ -1,8 +1,8 @@
 # Leaflet Maps – JavaScript Library - Part 2 – Auto Center and Zoom
 
-This builds on the simple template described in [the previous article](https://github.com/MattGingery/LeafletExamples/blob/master/Article_Part1.md).
+This builds on the simple template described in [the previous article](https://mattgingery.github.io/LeafletExamples/Article_Part1).
 
-Part 2 – Auto Center and Zoom Example links:  [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part2_autoCenterAndZoom.htm) | [JSFiddle](https://jsfiddle.net/mgingery/ght9n73c/)
+Part 2 – Auto Center and Zoom Example links: [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part2_autoCenterAndZoom.htm) | [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part2_autoCenterAndZoom.htm) | [JSFiddle](https://jsfiddle.net/mgingery/ght9n73c/)
 
 ## Automate the Bounds of the Map that is Displayed
 
@@ -21,5 +21,5 @@ If you like, you can create these “featureGroup” objects as global variables
 
 ## Next Steps
 
-In the [next article](https://github.com/MattGingery/LeafletExamples/blob/master/Article_Part3.md), I will add some user interaction code and to automatically adjust the polygon’s colors to give the users a better visual experience.
+In the [next article](https://mattgingery.github.io/LeafletExamples/Article_Part3), I will add some user interaction code and to automatically adjust the polygon’s colors to give the users a better visual experience.
 
