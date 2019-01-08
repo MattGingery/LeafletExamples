@@ -5,8 +5,8 @@ All you need to create a working webpage is about 20 lines of html and JavaScrip
 <html>
 <head>
   <title>Leaflet Part1 - Minimum Required</title>
-  <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>  
-  <script                 src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@0.7.3/dist/leaflet.css"/>
+                  <script src="https://unpkg.com/leaflet@0.7.3/dist/leaflet.js"></script>
   <style>
     #map{ height: 100% }
   </style>  
