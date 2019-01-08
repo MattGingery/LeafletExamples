@@ -28,8 +28,11 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 3.	Create a \<script> section AFTER the \<div>.  It will error if you create the script before the \<div>.
 4.	Create a JavaScript variable that references the id of the div (‘map’), sets the center coordinates of the map (I used the geographic center of the continental U.S. in my example:  “[39.82835 , -98.5816684]”), and the zoom level (1 is the furthest and 18 is usually the closest you can get). 
 5.	Create an object (“tileLayer”) using the above code and the call the “addTo()” method on it to place the map image tiles on the map object you created in the previous step.  You could specify other map sources here as well.
+
 That is all it takes to display an interactive map on your own webpage.
+
 ## Drawing Shapes and Markers
+
 Part 1 – Simple Example links:  [Preview](https://mattgingery.github.io/LeafletExamples/Leaflet_part1_simple.htm) | [GitHub](https://github.com/MattGingery/LeafletExamples/blob/master/Leaflet_part1_simple.htm) | [JSFiddle](https://jsfiddle.net/mgingery/zd7upbx2/) 
 
 In the “Part 1 – Simple” example the getPolygons() and getMarkers() JavaScript functions are where you return the map objects you wish to draw.  Usually these would get their data from a web service or from the middle tier of you web application.  In this example, though, I put some sample objects in to show you the format of data they should return.  
