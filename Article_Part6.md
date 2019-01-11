@@ -90,5 +90,5 @@ This example provides a pretty good starting point for creating simple interacti
 In the future, I may add an example of that or add other commonly used functionality.
 
 ## Footnotes
-1. For creating these shapes, I used a [Leaflet draw example page](https://bl.ocks.org/danswick/d30c44b081be31aea483) created by Dan Swick.  There may be better sites for doing this; this was just the first I found that works. 
+1. http://geojson.io is a good site for creating your own GeoJson shapes.
 
