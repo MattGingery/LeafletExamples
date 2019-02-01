@@ -10,7 +10,7 @@ The documentation for Leaflet is pretty good and I found several examples online
 
 For a **beginner's tutorial**, start with [my first article](https://mattgingery.github.io/LeafletExamples/Article_Part1).  
 
-To jump straight to an **example** that has lots of functionality already built, see [Leaflet_part6_concavePolygons.htm](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_concavePolygons.htm).
+To jump straight to an **example** that has lots of functionality already built, see [Leaflet_part7_rest_GeoJSON.htm](https://mattgingery.github.io/LeafletExamples/Leaflet_part7_rest_GeoJSON.htm).
 
 I also created some other articles each with example files that show step-by-step how you can start with a list of markers and/or polygons, draw each one, give each polygon specified color, display data when a marker or polygon is clicked, create a clickable index of the mapped objects, and more.  I have them available for download at https://github.com/MattGingery/LeafletExamples/ or for displaying at https://mattgingery.github.io/LeafletExamples/ and https://jsfiddle.net/user/mgingery/fiddles/ (the code on JSFiddle is slightly different since JSFiddle sometimes displays differently than a stand-alone HTM file).
 
@@ -28,4 +28,6 @@ Example Link | JSFiddle Link | Article Link
 [4.](https://mattgingery.github.io/LeafletExamples/Leaflet_part4_index.htm) | [fiddle](https://jsfiddle.net/mgingery/689pyjLm/) | [Part 4 – Map Index](https://mattgingery.github.io/LeafletExamples/Article_Part4)
 [5.](https://mattgingery.github.io/LeafletExamples/Leaflet_part5_wkt.htm) | [fiddle](https://jsfiddle.net/mgingery/m4we37od/) | [Part 5 – Well Known Text and GeoJSON](https://mattgingery.github.io/LeafletExamples/Article_Part5)
 [6.](https://mattgingery.github.io/LeafletExamples/Leaflet_part6_concavePolygons.htm) | [fiddle](https://jsfiddle.net/mgingery/6x3z9reL/) | [Part 6 – Concave Polygons](https://mattgingery.github.io/LeafletExamples/Article_Part6)
+[7.](https://mattgingery.github.io/LeafletExamples/Leaflet_part7_REST_GeoJSON.htm) | [fiddle](https://jsfiddle.net/mgingery/Lm5ouvx0/) | [Part 7 – REST and GeoJSON](https://mattgingery.github.io/LeafletExamples/Article_Part7)
+
 
