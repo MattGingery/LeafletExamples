@@ -52,6 +52,8 @@ function getClosestMiddleOfObjToLatLng(objLatLngs, latLng, isLine) {
   return middleLatLng;
 }
 ```  
+*Note: This code currently does not work with MultiPolygons. The .getLatLngs() for MuliPolygons returns a mulitdimensional array that you need to flatten.  In latter code I use* **var objLatLngs = objLatLngsArr.flat(2147483647)** *but the flat() function has no Internet Explorer or Edge support so you would have to write some custom code if you still want to support MultiPolygons and I.E.*
+
 Next, we need a method to determine the type of an object (Marker, Polyline, or Polygon) that was drawn on a map.  Unfortunately, Leaflet does not seem to have a reliable method for determining object type after you have created a Leaflet object so we need to store this information somewhere when you add the object to the map.  To do this, I will just determine the type when I read the data, and store it as a new array element in the “dataSet” global variable.
 ```javascript
 var objType = 'Point';  
