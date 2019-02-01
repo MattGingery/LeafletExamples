@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Leaflet Part7 - REST GeoJSON</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.4.0/dist/leaflet.css" integrity="sha512-puBpdR0798OZvTTbP4A8Ix/l+A4dHDD0DGqYW6RQ+9jxkRFclaxxQb/SJAWZfWAkuyeQUytO7+7N4QKrDh+drA==" crossorigin=""/>
+  <script                  src="https://unpkg.com/leaflet@1.4.0/dist/leaflet.js" integrity="sha512-QVftwZFqvtRNi0ZyCtsznlKSWOStnDORoefr1enyq5mVL4tmKB3S/EnC3rRJcxCPavG10IcrVGSmPh6Qw5lwrg==" crossorigin=""></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css"/>
+  <script                 src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.rawgit.com/hayeswise/Leaflet.PointInPolygon/v1.0.0/wise-leaflet-pip.js"></script>    
+  <style>
+	#content {
+	  width: 100%;
+	  overflow: hidden;
+	}
+
+	#searchDiv {
+	  display: none;
+	  float: left;
+	}
+
+	#map {
+	  width: 100%;
+	  height: 700px;
+	  float: right;
+	}
+  </style>  
+<script>
+// For Leaflet tutorials, see: https://mattgingery.github.io/LeafletExamples
+
+var lfmap, lfTileLayer, geoJSONData, searchTable;
+var mapObjects = [];
+var dataSet = [];
+var drawnObjTypes = {};
+var searchShown = false;
+var downloadCancelled = false;
+var nbrBatches = 0;
+var countTotalShapes = 0;
+var countDuplicateShapes = 0; //       not drawn.  ignored shapes.
+var countTotalDuplicateShapes = 0; // total not drawn.  ignored shapes.
+var tileLayerIndex = 0;
+// A few differnt sets of (the background) Map Tiles you can use: Mapnik is the most common, I believe.
+var tileLayers = [{
+    name: 'Mapnik',
+    maxZoom: 18,
+    URL: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png'
+  },
+  {
+    name: 'Black And White',
+    maxZoom: 14,
+    URL: 'http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png'
+  },
+  {
+    name: 'DE',
+    maxZoom: 16,
+    URL: 'http://{s}.tile.openstreetmap.de/tiles/osmde/{z}/{x}/ {y}.png'
+  },
+  {
+    name: 'France',
+    maxZoom: 16,
+    URL: 'http://{s}.tile.openstreetmap.fr/osmfr/{z}/{x}/{y}.png'
+  },
+  {
+    name: 'Hot',
+    maxZoom: 16,
+    URL: 'http://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
+  },
+  {
+    name: 'BZH',
+    maxZoom: 16,
+    URL: 'http://tile.openstreetmap.bzh/br/{z}/{x}/{y}.png'
+  }
+];
+
+// Used if not specified in config object below.
+var defaultSearchTableColumns = [{
+    title: 'ShapeNbr'
+  },
+  {
+    title: 'ShapeType'
+  },
+  {
+    title: 'Name'
+  }
+];
+
+// Shapes are drawn using this list of colors.  Feel free to change...			  
+var colorList = ['blue', 'red', 'purple', 'orange'];
+var colorIndex = -1;
+
+//------------------------------------------------------------------------------
+// This is your configurable properties object with functions 
+// used to format your data.  Pass these in from the middle layer 
+// of your application or keep these in a separate (referenced) Javascript file. 
+var config = {
+  // prevent endless loop.  Adjust values if a small batch size or large # shapes needed.
+  maxShapesTotal: 1000 * 1000,
+  maxNbrBatches: 100,
+
+  baseUrl: 'https://services.gis.ca.gov/arcgis/rest/services/Boundaries/Parcels_Residential/MapServer/0/query',
+  fieldsList: 'APN,SA_SITE_HOUSE_NBR,SA_SITE_FRACTION,SA_SITE_DIR,SA_SITE_STREET_NAME,SA_SITE_SUF,SA_SITE_POST_DIR,SA_SITE_UNIT_PRE,SA_SITE_UNIT_VAL,SA_SITE_CITY,SA_SITE_CITY_STATE,SA_SITE_ZIP',
+  orderBy: 'APN',
+  whereFilter: '', // can be SQL such as: "FIPS='06073' and SA_SITE_ZIP='92109'" 
+  uidProperty: 'APN', // Do not display duplicate APN (roughly, this is the unique id for each parcel)
+  titleProperty: 'APN',
+
+  // Enter the lat/lng coordinates and zoom level for data you wish to retrieve here:
+  startMinLng: -117.24,
+  startMinLat: 32.79,
+  startMaxLng: -117.25,
+  startMaxLat: 32.83,
+  startZoomLevel: 14,
+
+  // the first two columns of the search table must be: the 1-based ShapeNbr
+  // then the ShapeType.  They will NOT be displayed.
+  searchTableColumns: [{
+      title: 'ShapeNbr'
+    },
+    {
+      title: 'ShapeType'
+    },
+    {
+      title: 'APN'
+    },
+    {
+      title: 'Address'
+    },
+    {
+      title: 'Unit'
+    },
+    {
+      title: 'Zip'
+    }
+  ],
+
+  // -----------------------------------------
+  // Functions used to format display of data:
+
+  // Optional.  Page code just look at titleProperty if custom formatting is not needed.
+  formatTitle: function(properties) {
+    if (properties[this.titleProperty]) {
+      return properties[this.titleProperty];
+    }
+    return null;
+  },
+  // Optional.  Page code displays all feature.properties if this is not provided
+  formatPopupText: function(title, properties, mapObjectsIndex) {
+    if (!properties) {
+      return '';
+    }
+    var details = this.formatAddressLine1(properties) + '<br />';
+    var line2 = this.formatAddressLine2(properties);
+    if (line2.length > 0) {
+      details += line2 + '<br />';
+    }
+
+    details +=
+      (properties.SA_SITE_CITY ? properties.SA_SITE_CITY.trim() + ', ' : '') + ' ' +
+      (properties.SA_SITE_CITY_STATE ? properties.SA_SITE_CITY_STATE : '') + ' ' +
+      (properties.SA_SITE_ZIP ? properties.SA_SITE_ZIP : '') + ' ';
+
+    return '<b>APN: ' + title + '</b><br />' + details.replace(/  +/g, ' ').trim() +
+      '<br /><hr /><a href="javascript:void(0)" onclick="zoomToMapObject(' +
+      mapObjectsIndex + ')" accesskey="Z" title="Click or use Alt-Z to zoom to this location">Zoom To</a>';
+  },
+  // returns an array of data for a single feature that will be inserted into
+  // the Search Table.  Result must match the format of the 
+  // searchTableColumns property above. 
+  // Optional.  Page code will use: shapeNbr , objType , title if this is not provided
+  getSearchTableData: function(shapeNbr, objType, title, feature) {
+    var AddressLine1 = this.formatAddressLine1(feature.properties);
+    var AddressLine2 = this.formatAddressLine2(feature.properties);
+
+    return [shapeNbr, objType, title, AddressLine1, AddressLine2,
+      feature.properties.SA_SITE_ZIP
+    ];
+  },
+  // custom function just for this data set
+  formatAddressLine1: function(properties) {
+    if (!properties) {
+      return '';
+    }
+    var details =
+      (properties.SA_SITE_HOUSE_NBR ? properties.SA_SITE_HOUSE_NBR : '') + ' ' +
+      (properties.SA_SITE_FRACTION ? properties.SA_SITE_FRACTION : '') + ' ' +
+      (properties.SA_SITE_DIR ? properties.SA_SITE_DIR : '') + ' ' +
+      (properties.SA_SITE_STREET_NAME ? properties.SA_SITE_STREET_NAME : '') + ' ' +
+      (properties.SA_SITE_SUF ? properties.SA_SITE_SUF : '') + ' ' +
+      (properties.SA_SITE_POST_DIR ? properties.SA_SITE_POST_DIR : '');
+    return details.replace(/  +/g, ' ').trim(); // remove all mulitple spaces
+  },
+  // custom function just for this data set
+  formatAddressLine2: function(properties) {
+    if (!properties) {
+      return '';
+    }
+    var details =
+      (properties.SA_SITE_UNIT_PRE ? properties.SA_SITE_UNIT_PRE : '') + ' ' +
+      (properties.SA_SITE_UNIT_VAL ? properties.SA_SITE_UNIT_VAL : '');
+    return details.replace(/  +/g, ' ').trim(); // remove all mulitple spaces
+  }
+};
+//------------------------------------------------------------------------------
+
+
+$(document).ready(function() {
+
+  $('#searchDiv').hide();
+  $('#cancelDownload').hide();
+
+  if (!config) {
+    setStatus('**Error: Configuration data not loaded correctly.');
+    return;
+  }
+
+  setStatus('Initializing Map...');
+  drawMap((config.startMinLat + config.startMaxLat) / 2, (config.startMinLng + config.startMaxLng) / 2, config.startZoomLevel);
+
+  $.each(tileLayers, function(index, value) {
+    $('#tileLayerList').append(new Option(value.name, index));
+  });
+
+  setStatus('Downloading Map Images...');
+  $('#tileLayerList').change(function() {
+    drawTileLayer(this.selectedIndex);
+  });
+  $('#cancelDownload').click(function() {
+    downloadCancelled = true;
+  });
+
+
+  setStatus('Downloading Shapes...');
+  drawLayers(config.startMinLng, config.startMinLat, config.startMaxLng, config.startMaxLat);
+
+  $('#searchButton').click(function() {
+    searchShown = !searchShown;
+    if (searchShown) {
+      $('#searchButton').val('Hide Search');
+      $('#map').width('66%');
+      $('#searchDiv').width('30%');
+      zoomToMapObjects(mapObjects);
+
+      if (searchTable) {
+        searchTable.data = dataSet;
+      } else {
+        searchTable = $('#searchTable').DataTable({
+          data: dataSet,
+          pageLength: 15,
+          pagingType: 'simple',
+          bLengthChange: false,
+          columns: (config.searchTableColumns ? config.searchTableColumns : defaultSearchTableColumns),
+          columnDefs: [{
+            targets: [0, 1],
+            visible: false
+          }]
+        });
+
+        $('#searchTable tbody').on('click', 'tr', function() {
+          var index = searchTable.row(this).data()[0] - 1;
+          displayMapObject(index);
+        });
+      }
+    } else {
+      $('#searchButton').val('Show Search');
+      $('#map').width('100%');
+    }
+
+    $('#searchDiv').toggle();
+  });
+
+
+  // Basic map instantiation.  Can also use other sources besides OpenStreetMaps - 
+  // you should get the tileLayer urlTemplate and options from  
+  // your middle-tier application which should store that data in a config file. 
+  function drawMap(centerLat, centerLong, zoomLevel) {
+    try {
+      var mapCenter = [centerLat, centerLong];
+
+      lfmap = L.map('map').setView(mapCenter, zoomLevel);
+
+      drawTileLayer(0);
+
+    } catch (e) {
+      alert('Error drawing map objects: ' + e.message);
+    }
+  }
+
+  function drawTileLayer(newTileLayerIndex) {
+    var tileLayerSettings = tileLayers[newTileLayerIndex];
+    if (lfTileLayer === undefined) {
+      lfTileLayer = L.tileLayer(tileLayerSettings.URL, {
+        maxZoom: tileLayerSettings.maxZoom,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(lfmap);
+    } else {
+      lfTileLayer.setUrl(tileLayerSettings.URL);
+      if (tileLayerSettings.maxZoom < lfmap.getZoom()) {
+        lfmap.setZoom(tileLayerSettings.maxZoom);
+      }
+    }
+    lfmap.setMaxZoom(tileLayerSettings.maxZoom);
+    tileLayerIndex = newTileLayerIndex;
+  }
+
+  // Iterates through geo objects, assigns default values, and draws them.
+  function drawLayers(minLng, minLat, maxLng, maxLat) {
+    try {
+      nbrBatches++;
+      if (nbrBatches > config.maxNbrBatches) { // prevent endless loop.  
+        showDrawnLayersCompletion('Download Cancelled.  Exceeded maximum number of batches');
+        return;
+      }
+      downloadCancelled = false;
+
+      $('#cancelDownload').show();
+      countDuplicateShapes = 0;
+      var dataQueryURL = getJSONDataUrl(minLng, minLat, maxLng, maxLat, false, countTotalShapes);
+
+      $.getJSON(dataQueryURL)
+        .done(function(json) {
+          geoJSONData = json;
+          setStatus('Drawing Shapes...');
+
+          L.geoJSON(geoJSONData, {
+            filter: geoJSONFilter,
+            onEachFeature: onEachFeature
+          }).addTo(lfmap);
+
+          var cnt = geoJSONData.features.length;
+          countTotalShapes += cnt;
+          countTotalDuplicateShapes += countDuplicateShapes;
+          var message = cnt + ' shapes downloaded.  Total Shapes Displayed: ' +
+            (countTotalShapes - countTotalDuplicateShapes);
+          if (countDuplicateShapes > 0) {
+            message += '.  ' + countDuplicateShapes + ' duplicates ignored.';
+          }
+
+          console.log(nbrBatches + ' batch dups: ' + countDuplicateShapes + '.  ' + message);
+          setStatus(message);
+
+          zoomToShapes = true;
+          if (countTotalShapes >= config.maxShapesTotal) {
+            showDrawnLayersCompletion('Download Cancelled.  Exceeded maximum number of shapes');
+          } else if (downloadCancelled) {
+            showDrawnLayersCompletion('Download Cancelled');
+          } else if (geoJSONData.exceededTransferLimit) {
+            if (nbrBatches == 1) {
+              zoomToMapObjects(mapObjects);
+            }
+            drawLayers(minLng, minLat, maxLng, maxLat); // get next batch
+          } else {
+            showDrawnLayersCompletion('Complete');
+          }
+        })
+        .fail(function(jqxhr, textStatus, error) {
+          var err = textStatus + ', ' + error;
+          showDrawnLayersCompletion('**** Downloading FAILED: ' + err);
+        });
+    } catch (e) {
+      alert('Error drawing shapes: ' + e.message);
+    }
+  }
+
+  function showDrawnLayersCompletion(statusMessage) {
+    $('#cancelDownload').hide();
+    setStatus(statusMessage +
+      '.  Shape Totals-- Downloaded: ' + countTotalShapes +
+      '.  Displayed: ' + (countTotalShapes - countTotalDuplicateShapes) +
+      '.  Duplicates: ' + countTotalDuplicateShapes);
+    zoomToMapObjects(mapObjects);
+  }
+
+  // If a Unique ID property (uidProperty) is specified in config, 
+  // Do not display shapes with a duplicate Unique ID.
+  function geoJSONFilter(feature, layer) {
+    if (!config.uidProperty) return true;
+
+    var uid = (feature.properties[config.uidProperty]) ?
+      feature.properties[config.uidProperty] :
+      (config.uidProperty + ' is blank');
+    for (var i = 0; i < dataSet.length; i++) {
+      if (dataSet[i][2] == uid) {
+        countDuplicateShapes++;
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Called as each shape (feature) is drawn on the map.
+  function onEachFeature(feature, layer) {
+    var objType = feature.geometry.type.replace('Multi', ''); // User doesn't care if "multi" or not.
+    var shapeNbr = dataSet.length + 1;
+    layer.options.color = feature.properties.Color ? feature.properties.Color :
+      getColorRotation();
+
+    var title = formatTitle(objType, feature.properties);
+    var text = formatPopupText(title, feature.properties, shapeNbr - 1);
+    layer.bindPopup(text);
+    mapObjects.push(layer);
+
+    if (config.getSearchTableData) {
+      dataSet.push(config.getSearchTableData(shapeNbr, objType, title, feature));
+    } else {
+      dataSet.push([shapeNbr, objType, title]);
+    }
+  }
+
+  // Use this to format the default 'Title' of the object however you want.
+  // My code keeps a count of each different type of shape 
+  // (Polygon, Point, Line) shown and increments the # of each one of them.
+  function formatTitle(objType, properties) {
+    var val = null;
+    if (config.formatTitle) {
+      val = config.formatTitle(properties);
+    } else if (config.titleProperty) {
+      val = properties[config.titleProperty];
+    }
+
+    if (val) {
+      return val;
+    }
+
+    if (!drawnObjTypes.hasOwnProperty(objType)) {
+      drawnObjTypes[objType] = 1;
+    } else {
+      drawnObjTypes[objType] += 1;
+    }
+
+    return objType.charAt(0).toUpperCase() + objType.substr(1).toLowerCase() +
+      ' #' + ('    ' + (drawnObjTypes[objType])).slice(-5);
+  }
+
+  // Custom formatting of JSON properties values for display in the PopUp code:
+  function formatPopupText(title, properties, mapObjectsIndex) {
+    if (config.formatPopupText) {
+      return config.formatPopupText(title, properties, mapObjectsIndex);
+    } else {
+      var text = '<table>';
+      // display all properties:
+      if (properties) {
+        for (var key in properties) {
+          text += '<tr><td>' + key + ':</td><td>' + properties[key] + '</td></tr>';
+        }
+      }
+      return text + '</table>';
+    }
+  }
+
+  // Formats the URL for the GeoJSON REST service call.
+  // Uses the ARCGIS REST query standard.  Obviously you will have to change this
+  // code if you use a different web service that does not support these 
+  // query parameters. 
+  function getJSONDataUrl(minLng, minLat, maxLng, maxLat, returnCountOnly, resultOffset) {
+    var data = config.baseUrl + '?f=geojson&where=' + config.whereFilter +
+      '&geometry=' + minLng + ',' + minLat + ',' + maxLng + ',' + maxLat +
+      '&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects' +
+      '&outFields=' + config.fieldsList;
+
+    if (returnCountOnly) {
+      data += '&returnCountOnly=true';
+    } else {
+      data += '&returnGeometry=true&orderByFields=' + config.orderBy +
+        '&resultOffset=' + resultOffset;
+    }
+
+    return data;
+  }
+
+});
+
+
+function setStatus(message) {
+  document.getElementById('status').innerHTML = message;
+}
+
+function getStatus() {
+  return document.getElementById('status').innerHTML;
+}
+
+// Zooms to a mapObject by index, 
+// then shows the object's PopUp in the visual center of the object.
+function displayMapObject(mapObjectsIndex) {
+  zoomToMapObject(mapObjectsIndex);
+  var obj = mapObjects[mapObjectsIndex];
+  var group = new L.featureGroup([obj]);
+  var centerLatLng = group.getBounds().getCenter();
+  var objType = dataSet[mapObjectsIndex][1];
+
+  // If bounding box center is not within the polygon, find the closest 
+  // corners to that lat/long and place marker in the middle of it.
+  if (objType == 'Line' || (objType == 'Polygon' && !obj.contains(centerLatLng))) {
+    var latLngs = obj.getLatLngs();
+    centerLatLng = getClosestMiddleOfObjToLatLng(latLngs, centerLatLng, (objType == 'Line'));
+  }
+
+  obj.openPopup(centerLatLng);
+}
+
+function zoomToMapObject(mapObjectsIndex) {
+  zoomToMapObjects([mapObjects[mapObjectsIndex]]);
+}
+
+function zoomToMapObjects(objects) {
+  if (objects && objects.length > 0) {
+    var group = new L.featureGroup(objects);
+
+    lfmap.fitBounds(group.getBounds());
+  }
+}
+
+function getColorRotation() {
+  colorIndex++;
+  if (colorIndex >= colorList.length) {
+    colorIndex = 0;
+  }
+  return colorList[colorIndex];
+}
+
+// returns the Leaflet LatLng object that is at 
+// the middle point of a line segment from latLng1 to latLng2.
+function getMiddleOfTwoLngLng(latLng1, latLng2) {
+  var lat = (latLng1.lat + latLng2.lat) / 2;
+  var lng = (latLng1.lng + latLng2.lng) / 2;
+  return new L.LatLng(lat, lng);
+}
+
+// objLatLngsArr must be the polyline or polygon LatLng array or it can 
+// also be a multipolygon nested array.
+// latLng is the LatLng value of the point you want to get closest to.
+// isLine is boolean - needed because polygons latlng array does not include the 
+//  	final line; it is assumed the last latlng connects to the first latlng 
+//		in the array.
+function getClosestMiddleOfObjToLatLng(objLatLngsArr, latLng, isLine) {
+  var middleLatLng, distance = Number.MAX_VALUE;
+  var objLatLngs = objLatLngsArr.flat(2147483647); // This handles MultiPolygons 
+  //including polygons nested up to 2147483647 levels.  note: flat() has no I.E. or Edge support.
+
+  var nbrLines = objLatLngs.length - (isLine ? 1 : 0); // get closing LatLng if polygon	
+  for (var i = 0; i < nbrLines; i++) {
+    var thisMiddle = getMiddleOfTwoLngLng(objLatLngs[i], objLatLngs[(i == objLatLngs.length - 1) ? 0 : i + 1]);
+    var thisDistance = latLng.distanceTo(thisMiddle);
+    if (thisDistance < distance) {
+      middleLatLng = thisMiddle;
+      distance = thisDistance;
+    }
+  }
+  return middleLatLng;
+}
+
+
+</script>
+</head>
+<body>
+<div id="toolbar" style="width:100%">
+  <input type="button" id="searchButton" accesskey="S" title="Click or use Alt-S to hide/show the search page" value="Show Search" /> &nbsp;&nbsp;&nbsp;&nbsp;
+  <select id="tileLayerList" title="Change Type of Map Used"></select> &nbsp;&nbsp;&nbsp;&nbsp;
+  <input type="button" id="cancelDownload" accesskey="C" title="Click or use Alt-C to cancel dowloading of shapes" value="Cancel" /> &nbsp;&nbsp;
+  <span id="status" style="color:red"></span>
+</div>
+<div id="content">
+  <div id="searchDiv">
+    <table id="searchTable" class="display" style="width:100%"></table>
+  </div>
+  <div id="map"></div>
+</div>
+
+
+</body>
+</html>
