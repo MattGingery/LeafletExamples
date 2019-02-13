@@ -455,11 +455,19 @@ function getClosestMiddleOfObjToLatLng(objLatLngsArr, latLng, isLine) {
 
 function getConfigIndex() {
   var pathParts = window.location.href.split('?');
-  return pathParts.length > 1 ? pathParts[1] : 0;
+  if (pathParts.length > 1) {
+    var paramParts = pathParts[1].split('&');
+    for (var i = 0; i < paramParts.length; i++) {
+      if (paramParts[i].includes('dix=')) {
+        return paramParts[i].split('=')[1];
+      }
+    }
+  }
+  return 0;
 }
 
 function setConfigIndex(indexVal) {
-  window.location = '?' + indexVal;
+  window.location.search = 'dix=' + indexVal;
 }
 
 //------------------------------------------------------------------------------
