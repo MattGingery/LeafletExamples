@@ -10,7 +10,7 @@ The documentation for Leaflet is pretty good and I found several examples online
 
 For a **beginner's tutorial**, start with [my first article](https://mattgingery.github.io/LeafletExamples/Article_Part1).  
 
-To jump straight to an **example** that has lots of functionality already built, see [Leaflet_part7_rest_GeoJSON.htm](https://mattgingery.github.io/LeafletExamples/Leaflet_part7_rest_GeoJSON.htm).
+To jump straight to an **example** that has lots of functionality already built, see [Leaflet_part7_rest_GeoJSON.htm](https://mattgingery.github.io/LeafletExamples/Leaflet_part7_rest_GeoJSON.htm) or for several examples see [Leaflet_part7_rest_GeoJSON_more.htm](https://mattgingery.github.io/LeafletExamples/Leaflet_part7_rest_GeoJSON_more.htm).
 
 I also created some other articles each with example files that show step-by-step how you can start with a list of markers and/or polygons, draw each one, give each polygon specified color, display data when a marker or polygon is clicked, create a clickable index of the mapped objects, and more.  I have them available for download at https://github.com/MattGingery/LeafletExamples/ or for displaying at https://mattgingery.github.io/LeafletExamples/ and https://jsfiddle.net/user/mgingery/fiddles/ (the code on JSFiddle is slightly different since JSFiddle sometimes displays differently than a stand-alone HTM file).
 
