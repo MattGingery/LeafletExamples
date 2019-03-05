@@ -81,7 +81,7 @@ schools.getSearchTableData = function(shapeNbr, objType, title, feature) {
 
 ## Other Enhancements
 
-Another enhancement I made is to show you how to change the map tiles that are the geography images shown behind the objects you draw.  There are many different sets of tiles available from OpenStreetMap and other sources.  You can define the list in the tileLayers object array.  The objects in this array include a “maxZoom” attribute that is needed since many tile layers do not have as much close up detail available as other maps.  I used jQuery to populate a <select> input using this array.  The <select> input calls the drawTileLayer() function when changed:
+Another enhancement I made is to show you how to change the map tiles that are the geography images shown behind the objects you draw.  There are many different sets of tiles available from OpenStreetMap and other sources.  You can define the list in the tileLayers object array.  The objects in this array include a “maxZoom” attribute that is needed since many tile layers do not have as much close up detail available as other maps.  I used jQuery to populate a *select* input using this array.  The *select* input calls the drawTileLayer() function when changed:
 ```javascript
   function drawTileLayer(newTileLayerIndex) {
     var tileLayerSettings = tileLayers[newTileLayerIndex];
